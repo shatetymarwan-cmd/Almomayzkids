@@ -1,0 +1,14 @@
+{
+  "name": "المميز لألعاب الأطفال والدراجات",
+  "short_name": "المميز",
+  "description": "تطبيق المميز لألعاب الأطفال والدراجات",
+  "start_url": "./",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#f7f8fc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
