@@ -11,7 +11,9 @@
 .btn{display:inline-block;background:#fff;color:#2563eb;text-decoration:none;padding:13px 25px;border-radius:999px;font-weight:bold;margin:5px}
 .container{max-width:1050px;margin:auto;padding:42px 18px}.title{text-align:center;font-size:32px;margin:0 0 28px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{background:#fff;border-radius:20px;padding:26px;text-align:center;box-shadow:0 8px 25px #00000012}.icon{font-size:48px}
+.card{background:#fff;border-radius:20px;padding:20px;text-align:center;box-shadow:0 8px 25px #00000012;overflow:hidden}
+.card img{width:100%;height:190px;object-fit:cover;border-radius:15px;background:#f1f5f9}.icon{font-size:48px}
+.price{font-size:22px;font-weight:bold;color:#2563eb;margin:10px 0}.order{display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:9px 18px;border-radius:999px;font-weight:bold}
 .info{background:#111827;color:#fff;border-radius:24px;padding:30px;text-align:center}.info a{color:#fff}.phone{font-size:25px;font-weight:bold}
 footer{text-align:center;padding:25px;color:#6b7280}
 </style>
@@ -26,7 +28,7 @@ footer{text-align:center;padding:25px;color:#6b7280}
 <main>
 <section class="container">
 <h2 class="title">منتجاتنا</h2>
-<div class="cards">
+<div class="cards" id="products">
 <div class="card"><div class="icon">🚲</div><h3>دراجات الأطفال</h3><p>دراجات بمقاسات وتصاميم متنوعة للأطفال.</p></div>
 <div class="card"><div class="icon">🧸</div><h3>ألعاب الأطفال</h3><p>ألعاب ممتعة ومناسبة لمختلف الأعمار.</p></div>
 <div class="card"><div class="icon">🛴</div><h3>دراجات وسكوترات</h3><p>خيارات متنوعة للعب والحركة.</p></div>
@@ -43,5 +45,56 @@ footer{text-align:center;padding:25px;color:#6b7280}
 </section>
 </main>
 <footer>© 2026 المميز لألعاب الأطفال والدراجات</footer>
+
+<script>
+// بعد إعداد Google Sheets مرة واحدة، أضع لك رابط الجدول هنا.
+// بعدها ستعدل المنتجات والأسعار والصور من الجدول فقط، بدون لمس الموقع.
+const SHEET_CSV_URL = "";
+
+function renderProducts(rows){
+  const box=document.getElementById("products");
+  if(!rows.length) return;
+  box.innerHTML=rows.map(p=>{
+    const name=(p.name||"منتج").trim();
+    const price=(p.price||"").trim();
+    const image=(p.image||"").trim();
+    const desc=(p.description||"").trim();
+    const waText=encodeURIComponent("السلام عليكم، أريد الاستفسار عن: "+name+(price?" - "+price:""));
+    return `<div class="card">
+      ${image ? `<img src="${image}" alt="${name}" loading="lazy">` : '<div class="icon">🧸</div>'}
+      <h3>${name}</h3>
+      ${desc ? `<p>${desc}</p>` : ""}
+      ${price ? `<div class="price">${price}</div>` : ""}
+      <a class="order" href="https://wa.me/218914827277?text=${waText}">اطلب عبر واتساب</a>
+    </div>`;
+  }).join("");
+}
+
+function csvToRows(csv){
+  const lines=csv.trim().split(/\r?\n/);
+  if(lines.length<2) return [];
+  const parse=line=>{
+    const out=[];let cur="",q=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i],n=line[i+1];
+      if(c=='"'&&q&&n=='"'){cur+='"';i++}
+      else if(c=='"'){q=!q}
+      else if(c==","&&!q){out.push(cur);cur=""}
+      else cur+=c;
+    }
+    out.push(cur);return out;
+  };
+  const headers=parse(lines[0]).map(x=>x.trim().toLowerCase());
+  return lines.slice(1).map(line=>{
+    const vals=parse(line),o={};
+    headers.forEach((h,i)=>o[h]=vals[i]||"");
+    return o;
+  }).filter(x=>x.name);
+}
+
+if(SHEET_CSV_URL){
+  fetch(SHEET_CSV_URL).then(r=>r.text()).then(csv=>renderProducts(csvToRows(csv))).catch(()=>{});
+}
+</script>
 </body>
 </html>
